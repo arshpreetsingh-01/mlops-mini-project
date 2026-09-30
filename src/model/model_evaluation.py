@@ -144,10 +144,26 @@ def main():
                     mlflow.log_param(param_name, param_value)
             
             # Log model to MLflow
-            mlflow.sklearn.log_model(clf, "model")
-            
-            # Save model info
-            save_model_info(run.info.run_id, "model", 'reports/experiment_info.json')
+            # Log model to MLflow
+            logged_model = mlflow.sklearn.log_model(
+                sk_model=clf,
+                name="model"
+            )
+
+            logger.debug("Model logged successfully")
+            logger.debug("Model ID: %s", logged_model.model_id)
+            logger.debug("Model URI: %s", logged_model.model_uri)
+
+            # Save model information
+            model_info = {
+                "run_id": run.info.run_id,
+                "model_id": logged_model.model_id,
+                "model_uri": logged_model.model_uri,
+                "model_path": logged_model.artifact_path
+            }
+
+            with open("reports/experiment_info.json", "w") as file:
+                json.dump(model_info, file, indent=4)
             
             # Log the metrics file to MLflow
             mlflow.log_artifact('reports/metrics.json')
